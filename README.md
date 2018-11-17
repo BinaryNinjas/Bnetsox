@@ -5,3 +5,10 @@ www.DarkBlizz.org
 <br>
 
 ![WebBotSS](http://darkblizz.org/images/webbot2.png)
+
+<br>
+<br>
+<br>
+ChangeLog:
+<br>
+Work in progess
