@@ -1,0 +1,330 @@
+ <!DOCTYPE html>
+ <head>
+
+    <meta charset="utf-8" />
+    <title>WebSocket Bnut</title>
+    <link href="styles.css" rel="stylesheet" type="text/css" />
+    <link href="divstyles.css" rel="stylesheet" type="text/css" />
+   
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="functions.js"></script>
+    <script src="bnetcontrol.js"></script>
+
+    <script language="javascript" type="text/javascript">
+
+        var wsUri = "wss://connect-bot.classic.blizzard.com/v1/rpc/chat";
+        var wsProto = "json";
+        var apiKey = "";
+        var output;
+        var btnConnect;
+        var btnSend;
+        var staticCommandInput;
+        var channeltitle;
+        var lastRequestId = 0;
+        var connected = false;
+        var loggedonname = false;
+        var loggedname = "";
+        var endofuserlisting = false;
+        $users = {};
+
+        var messageHandlers = { 
+            "Botapichat.DisconnectResponse": OnDisconnectRequest,
+            "Botapichat.DisconnectEventRequest": OnChatDisconnect,
+            "Botapichat.SendSetModeratorResponse": OnChatSendOpResponse,
+            "Botapichat.KickUserResponse": OnChatSendKickUserResponse,
+            "Botapichat.UnbanUserResponse": OnChatSendUnbanUserResponse,
+            "Botapichat.BanUserResponse": OnChatSendBanUserResponse,
+            "Botapichat.SendEmoteResponse": OnChatSendEmoteResponse,
+            "Botapichat.SendMessageResponse": OnChatSendMessageResponse,
+            "Botapichat.SendWhisperResponse": OnChatSendWhisperResponse,
+            "Botapichat.UserLeaveEventRequest": OnUserLeaveEvent,
+            "Botapiauth.AuthenticateResponse": OnAuthResponse,
+            "Botapichat.ConnectResponse": OnChatConnectResponse,
+            "Botapichat.ConnectEventRequest": OnChatConnect,
+            "Botapichat.MessageEventRequest": OnMessageEvent,
+            "Botapichat.UserUpdateEventRequest": OnUserUpdateEvent
+        };
+        
+        function OnClick_btnConnect(evt)
+        {
+            if($("#apikey").val() == "") { 
+                NotificationMessage('error', 'Your API key is not present (enter your key and try again).');
+                return;
+            }
+            apiKey = $("#apikey").val();
+
+            if(btnConnect.defaultValue == "Disconnect")
+            {
+                websocket.close();
+            }
+            if(btnConnect.defaultValue == "Connect")
+            {
+                init();
+            }
+        }
+       
+        function ProcessSendMessage(text) {
+            if(text == undefined) { return; } //text is null
+            if(text.length < 1) { return; } //no text in the buffer
+            var $tempbuffer = "";
+            var userid;
+            var res = text.split(" ");
+            if(res[0].toLowerCase() == "/w" || res[0].toLowerCase() == "/whisper") {
+                //0 = command
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty whisper command
+                $tempbuffer = text.substring(res[0].length + 1);
+                //1 = username
+                //get id from this name
+                userid = $GetUserID(res[1]);
+                if(userid == "-1") { 
+                    NotificationMessage('error', 'While you are able to whisper users, they must be in your channel for you to do so (Battle.Net Classic Chat API Cons).');
+                    return; 
+                } //non existant/visable user
+                if($tempbuffer.length < res[1].length + 1 || $tempbuffer.length == res[1].length + 1) { 
+                    NotificationMessage('error', 'Error: Missing message for intended whispered user.');
+                    NotificationMessage('error', 'Error: Message can not be blank.');
+                    return; 
+                } //no message to be sent
+                $tempbuffer = $tempbuffer.substring(res[1].length + 1);
+
+                //whisper message
+                SendWhisperMessage(userid,$tempbuffer);
+                return;
+            }
+            if(res[0].toLowerCase() == "/me" || res[0].toLowerCase() == "/emote") {
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty command
+                $tempbuffer = text.substring(res[0].length + 1);
+                SendEmoteMessage($tempbuffer);
+                return;
+            }
+            if(res[0].toLowerCase() == "/ban") {
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty command
+                $tempbuffer = text.substring(res[0].length + 1);
+                userid = $GetUserID($tempbuffer);
+                if(userid == "-1") { 
+                    NotificationMessage('error', 'If you cant see them you cant ban them. (Battle.Net Classic Chat API Cons).');
+                    return; 
+                } //non existant/visable user
+                SendBanMessage(userid);
+                return;
+            }
+            if(res[0].toLowerCase() == "/unban") {
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty command
+                $tempbuffer = text.substring(res[0].length + 1);
+                SendUnbanMessage($tempbuffer);
+                return;
+            }
+            if(res[0].toLowerCase() == "/kick") {
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty command
+                $tempbuffer = text.substring(res[0].length + 1);
+                userid = $GetUserID($tempbuffer);
+                if(userid == "-1") { 
+                    NotificationMessage('error', 'If you cant see them you cant kick them. (Battle.Net Classic Chat API Cons).');
+                    return; 
+                } //non existant/visable user
+                SendKickMessage(userid);
+                return;
+            }
+            if(res[0].toLowerCase() == "/op") {
+                if(text.length < res[0].length + 1 || text.length == res[0].length + 1) { return; } //empty command
+                $tempbuffer = text.substring(res[0].length + 1);
+                userid = $GetUserID($tempbuffer);
+                if(userid == "-1") { 
+                    NotificationMessage('error', 'If you cant see them you cant Op them. (Battle.Net Classic Chat API Cons).');
+                    return; 
+                } //non existant/visable user
+                SendOpMessage(userid);
+                return;
+            }
+            if(res[0].toLowerCase() == "/disconnect") {
+                SendDisconnectMessage();
+                return;
+            }
+            if(res[0].toLowerCase() == "/?" || res[0].toLowerCase() == "/help") {
+                NotificationMessage('warning', 'Current Commands allowed at this moment:');
+                NotificationMessage('warning', '(/? || /help)');
+                NotificationMessage('warning', '(/w || /whisper) username message');
+                NotificationMessage('warning', '(/me || /emote) message');
+                NotificationMessage('warning', '(/ban) username');
+                NotificationMessage('warning', '(/unban) username');
+                NotificationMessage('warning', '(/kick) username');
+                NotificationMessage('warning', '(/op) username');
+                NotificationMessage('warning', '(/disconnect)');
+                NotificationMessage('warning', 'Hint: You dont have to hit send, you can also hit enter.');
+                return;
+            }
+            SendTextMessage(text);
+        }
+
+        function SendTextMessage(text) {
+            var textmessage = {
+                "command": "Botapichat.SendMessageRequest",
+                "request_id": ++lastRequestId,
+                "payload": {
+                    "message": text,
+                }
+            };
+            OnSelfMessage(loggedname, text);
+            doSend(JSON.stringify(textmessage));
+        }
+
+        function OnClick_btnSend(evt) {
+            var text = $("#command-input").val();
+            if(text == "") { return; } //empty message dont send.
+            $("#command-input").val("");
+            if(connected == false) { return; } //were not connected.
+            ProcessSendMessage(text);
+        }
+
+        function OnKeyPressed_staticCommandInput(evt) {
+            if(evt["key"] == "Enter") { //then send the message
+                var text = $("#command-input").val();
+                if(text == "") { return; } //empty message dont send.
+                $("#command-input").val("");
+                if(connected == false) { return; } //were not connected.
+                ProcessSendMessage(text);
+            }
+        }
+
+        function init()
+        {
+            channeltitle = document.getElementById("main-channel-title");
+            channeltitle.innerText = "";
+            output = document.getElementById("main-chat");
+            btnConnect = document.getElementById("con-button");
+            btnConnect.onclick = function(evt) { OnClick_btnConnect(evt) };
+            btnConnect.defaultValue = "Connect";
+            btnSend = document.getElementById("command-button");
+            btnSend.onclick = function(evt) { OnClick_btnSend(evt) }
+            staticCommandInput = document.getElementById("command-input");
+            staticCommandInput.onkeypress = function(evt) { OnKeyPressed_staticCommandInput(evt) }
+            testWebSocket();
+        }
+
+        function testWebSocket()
+        {
+            websocket = new WebSocket(wsUri, wsProto);
+            websocket.onopen = function(evt) { onOpen(evt) };
+            websocket.onclose = function(evt) { onClose(evt) };
+            websocket.onmessage = function(evt) { onMessage(evt) };
+            websocket.onerror = function(evt) { onError(evt) };
+        }
+
+        function onOpen(evt)
+        {
+            if($("#apikey").val() == "") { 
+                //NotificationMessage('error', 'Your API key is not present (enter your key and try again).');
+                return;
+            }
+            apiKey = $("#apikey").val();
+
+            connected = true;
+            btnConnect.defaultValue = "Disconnect";
+
+            NotificationMessage('1', 'Connected.');
+
+            var auth = {
+                "command": "Botapiauth.AuthenticateRequest",
+                "request_id": ++lastRequestId,
+                "payload": {
+                    "api_key": apiKey,
+                }
+            };
+            doSend(JSON.stringify(auth));
+        }
+
+        function onClose(evt)
+        {
+            connected = false;
+            loggedonname = false;
+            endofuserlisting = false;
+            btnConnect.defaultValue = "Connect";
+            ClearUsers();
+
+            var myNode = document.getElementById("userlisting");
+            while (myNode.firstChild) {
+                myNode.removeChild(myNode.firstChild);
+            }
+
+            channeltitle.innerText = ""; //reset the channel title
+            NotificationMessage('3', 'Disconnected.');
+       }
+
+        function onMessage(evt)
+        {
+            var msg = JSON.parse(evt.data)
+            
+            var handler = messageHandlers[msg["command"]];
+        
+            if (handler) {
+                handler(msg["status"], msg["payload"]);
+            } else {
+                writeToScreen('Recved unknown message: ' + msg["command"]);
+                writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+            }
+        }
+
+        function onError(evt)
+        {
+            writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+        }
+
+        function doSend(message)
+        {
+            websocket.send(message);
+        }
+
+        function writeToScreen(message)
+        {
+            var pre = document.createElement("li");
+
+            pre.style.wordWrap = "break-word";
+            pre.innerText = message;
+
+            messagelisting.appendChild(pre);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        window.addEventListener("load", init, false);
+
+    </script>
+</head>
+    <body>
+        <div class="window-location">
+            <div class="main-window">
+                <div class="table">
+                    <div class="table-row">
+                        <div class="table-cell" id="main-apikey">
+                            <input id="apikey" value=""  ng-disabled="connected" type="password"></input>
+                        </div>
+                        <div class="table-cell" id="main-connect-button">
+                            <input class="button-cls" type="button" value="{{ connected ? 'Disconnect' : 'Connect' }}" id="con-button"></input>
+                        </div>
+                    </div>
+                    <div class="table-row">          
+                            <div class="table-cell" id="main-chat">
+                                <ul id="messagelisting" ng-repeat="message in messages track by $index">
+
+                                </ul>                    
+                            </div>
+                            <div class="table-cell" id="main-channel-title">-channel name here-</div>
+                            <div class="table-cell" id="main-userlist">
+                                <ul id="userlisting" ng-repeat="user in users">
+
+                                </ul>
+                            </div>
+                    </div>
+                    <div class="table-row">          
+                        <div class="table-cell" id="main-send-chat">
+                                <input id="command-input" value="" ng-disabled="!connected"></input>
+                        </div>
+                        <div class="table-cell" id="main-send-chat-button">
+                                <input class="button-cls" type="button" value="Send" id="command-button" ng-disabled="!connected"></input>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

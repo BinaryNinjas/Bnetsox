@@ -1,0 +1,109 @@
+@charset "utf-8";
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+div {
+    border: 1px;
+    border-color: black;
+    border-style: solid;
+}
+
+div.window-location {
+    width: 800px;
+    height: 600px;
+   background-color: rgba(0, 0, 0, 0.219);
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+div.main-window {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+div.table {
+    width: 100%;
+    height: 100%;
+    display: table;
+}
+div.table-row {
+    display: table-row;
+}
+div.table-cell {
+    /* border: 1px solid red; */
+    display: table-cell;
+}
+div.table-cell.table-rowspan {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+}
+#main-apikey, #main-connect-button, #main-send-chat, #main-send-chat-button {
+    height: 25px;
+}
+
+#main-chat {
+    position: absolute;
+    top: 30px;
+    left: 3px;
+    height: calc(100% - 60px);
+    width: calc(100% - 227px);
+}
+#main-channel-title {
+    position: absolute;
+    top: 30px;
+    left: calc(100% - 220px);
+    height: 20px;
+    width: 215px;
+}
+#main-userlist {
+    position: absolute;
+    top: 54px;
+    left: calc(100% - 220px);
+    height: calc(100% - 84px);
+    width: 215px;
+}
+#main-connect-button, #main-send-chat-button {
+    width: 215px;
+}
+#main-send-chat {
+    position: absolute;
+    top: calc(100% - 26px);
+    left: 3px;
+    height: 21px;
+    width: calc(100% - 227px);
+}
+#main-send-chat-button {
+    position: absolute;
+    top: calc(100% - 26px);
+    left: calc(100% - 220px);
+    height: 21px;
+}
+#main-apikey {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: 20px;
+    width: calc(100% - 227px);
+}
+#main-connect-button {
+    position: absolute;
+    top: 3px;
+    left: calc(100% - 220px);
+    height: 20px;
+}
+#main-channel-title {
+    text-align: center;
+    color: white;
+}

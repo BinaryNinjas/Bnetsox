@@ -1,0 +1,210 @@
+@charset "utf-8";
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+
+   
+   
+   background: url(./bnetsox_logo_transparent.png) no-repeat, black;
+   
+  background-position: top 500px right 0px;
+  
+ 
+   
+
+      background-size: 300px;
+  
+   
+   
+}
+
+div#main-content {
+    margin: 0 auto;
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: 10px;
+    padding-top: 45px;
+    padding-left: 0px;
+    width: 800px;
+}
+
+#main-chat, #main-userlist {
+    overflow-y: auto;
+}
+
+#main-chat ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#main-chat li {
+    font: 200 14px/1.5 Helvetica, Verdana, sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.messages li:last-child {
+    border: none;
+}
+
+#main-chat, #main-channel-title, #main-userlist {
+  
+   background-image: linear-gradient(to top, #09203f 0%, #537895 100%);
+   
+}
+
+#command-input, #apikey, #command-button, #con-button {
+    height: 100%;
+    width: 100%;
+    
+}
+
+#main-chat li {
+    width: 100%;
+    display: inline-block;
+}
+#main-chat li p {
+    margin-top: 0;
+    margin-bottom: 0;
+    word-wrap: break-word;
+    white-space: normal;
+    display: inline-block;
+}
+
+.emote-cls {
+    font-style: italic; 
+    color: gold;
+}
+.emote-em-cls {
+    margin-left: 5px;
+    font-style: italic; 
+    color: gold;
+}
+
+#main-chat li.whisper-box {
+    background-color: #000;
+    background-image: none;
+}
+
+.w-from-cls {
+    color: rgb(63, 63, 63);
+}
+
+.w-from-em-cls {
+    margin-left: 5px;
+    color: rgb(63, 63, 63);
+}
+
+.normal-em {
+    margin-left: 5px;
+}
+
+.timestamp-cls {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.self-message {
+    color: red;
+}
+.good-message {
+    color: green;
+}
+.warning-message {
+    color: yellow;
+}
+.bad-message {
+    color: red;
+}
+.userinchannel-message {
+    color: rgb(63, 63, 63);
+}
+.userleftchannel-message {
+    color: yellow;
+}
+.userjoinedchannel-message {
+    color: rgb(52, 52, 233);
+}
+
+div#main-userlist {
+    overflow-y: auto;
+  
+  
+}
+
+#userlisting li {
+    height: 19px;
+    background-repeat: no-repeat;
+    background-position-x: 5px;
+    background-position-y: 5px;
+}
+#userlisting li:hover {
+    color: #FFF;
+    background-color: royalblue;
+}
+#userlisting li p {
+    font: 200 14px/1.5 Helvetica, Verdana, sans-serif;
+    display: inline-block;
+    height: 14px;
+    color: orange;
+}
+.icon-em {
+    margin-left: 35px;
+}
+
+.icon-chat {
+    background-image: url(./icons/chat.bmp);
+}
+.icon-starcraftj {
+    background-image: url(./icons/jstr.bmp);
+}
+.icon-starcraft {
+    background-image: url(./icons/star.bmp);
+}
+.icon-broodwars {
+    background-image: url(./icons/sexp.bmp);
+}
+.icon-diablo1 {
+    background-image: url(./icons/drtl.bmp);
+}
+.icon-diablo1sw {
+    background-image: url(./icons/dshr.bmp);
+}
+.icon-diablo2 {
+    background-image: url(./icons/d2dv.bmp);
+}
+.icon-diablo2lod {
+    background-image: url(./icons/d2xp.bmp);
+}
+.icon-warcraft2 {
+    background-image: url(./icons/w2bn.bmp);
+}
+.icon-warcraft3 {
+    background-image: url(./icons/war3.bmp);
+}
+.icon-warcraft3tft {
+    background-image: url(./icons/w3xp.bmp);
+}
+.icon-moderator {
+    background-image: url(./icons/extra/operator.bmp);
+}
+.icon-unknowen {
+    background-image: url(./icons/extra/unknowen.bmp);
+}
+
+#icons {
+    height: 14px;
+    width: 28px;
+
+    margin-left: 5px;
+    margin-top: 5px;
+    padding: 0;
+
+    background-repeat: no-repeat;
+    display: inline-block;
+}
